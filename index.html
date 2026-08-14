@@ -262,6 +262,35 @@
 
   .p-card-actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:auto; margin-bottom:16px; }
 
+  .notify-form{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .notify-input{
+    flex:1;
+    min-width:140px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13px;
+    padding:11px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    outline:none;
+    background:var(--white);
+    color:var(--ink);
+  }
+  .notify-input:focus{ border-color:var(--cyan-deep); }
+  .notify-submit{ cursor:pointer; border:none; }
+  .notify-status{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--cyan-deep);
+    margin:-8px 0 16px;
+    min-height:14px;
+  }
+  .notify-status.error{ color:#c0392b; }
+
   .btn{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
@@ -418,8 +447,12 @@
         </div>
         <div class="p-card-actions">
           <span class="btn btn-disabled">Coming soon</span>
-          <a class="btn btn-ghost" href="mailto:sextonsworkshop@outlook.com?subject=Notify%20me%20—%20Light-Up%20Ball">Get notified</a>
         </div>
+        <form class="notify-form" id="notify-form" onsubmit="return submitNotifyForm(event)">
+          <input type="email" class="notify-input" id="notify-email" placeholder="you@email.com" required>
+          <button type="submit" class="btn btn-solid notify-submit">Get notified</button>
+        </form>
+        <p class="notify-status" id="notify-status"></p>
         <details class="p-more" id="more-ball">
           <summary>More about the Light-Up Ball <span class="chev">+</span></summary>
           <p>Light up the night with the Light Up Ball, a unique illuminated ball designed to bring a fun new twist to outdoor play. Featuring a bright LED core surrounded by a durable TPU exterior, the Light Up Ball creates a vibrant glow that makes it easy to see and enjoy after dark.</p>
@@ -464,5 +497,47 @@
   </div>
 </section>
 
+<script>
+  // Replace with your deployed Google Apps Script Web App URL (see setup notes)
+  var NOTIFY_ENDPOINT = "https://script.google.com/macros/s/AKfycbwYtFP92eoQx9pA9AEPaLQhiTpphocganRGlYtLWaWX0XJ77kn4inBqHJUQTwtfDKJ_/exec";
+
+  function submitNotifyForm(e){
+    e.preventDefault();
+    var emailInput = document.getElementById('notify-email');
+    var status = document.getElementById('notify-status');
+    var email = emailInput.value.trim();
+
+    if (!email){
+      status.textContent = "Enter an email first.";
+      status.className = "notify-status error";
+      return false;
+    }
+
+    if (NOTIFY_ENDPOINT.indexOf("PASTE_YOUR") === 0){
+      status.textContent = "Signup isn't wired up yet — see setup notes.";
+      status.className = "notify-status error";
+      return false;
+    }
+
+    status.textContent = "Signing you up...";
+    status.className = "notify-status";
+
+    fetch(NOTIFY_ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ email: email, source: "light-up-ball" })
+    }).then(function(){
+      status.textContent = "You're on the list — we'll email you when it's out.";
+      status.className = "notify-status";
+      emailInput.value = "";
+    }).catch(function(){
+      status.textContent = "Something went wrong. Try again in a bit.";
+      status.className = "notify-status error";
+    });
+
+    return false;
+  }
+</script>
 </body>
 </html>
